@@ -1,4 +1,5 @@
 import datetime, time
+import sqlite3
 
 def openFile():
 	return open('/home/gregorah/notes', 'a')
@@ -10,16 +11,21 @@ def writeNoteToFile(note):
 	notesFile.write(note)
 	notesFile.close()
 
-def openDB()
-	return sqlite3.connect('/home/gregorah/.notes.db')
+def ensureDB(conn):
+	conn.execute('CREATE TABLE IF NOT EXISTS Notes(time DATETIME, note TEXT);')
+	return conn
 
-def insertNote(notesDB, note)
-	notesDB.execute('INSERT INTO Notes(time, note) VALUES (?,?)', (datetime.date.today().ctime(), note))
+def openDB():
+	return ensureDB(sqlite3.connect('/home/gregorah/.notes.db'))
+	
+def insertNote(notesDB, note):
+	notesDB.execute('INSERT INTO Notes(time, note) VALUES (current_timestamp,?);', (note,))
 
 def writeNoteToDatabase(note):
 	notesDB = openDB()
 	insertNote(notesDB, note)
-	notesdb.close();
+	notesDB.commit()
+	notesDB.close()
 
 def writeNote(note, writeFile, writeDatabase):
 	if(writeFile):
@@ -29,6 +35,6 @@ def writeNote(note, writeFile, writeDatabase):
 
 print "Taking notes..."
 note = raw_input()
-writeNote(note, True, False)
+writeNote(note, True, True)
 
 
