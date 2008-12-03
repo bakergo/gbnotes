@@ -8,6 +8,7 @@
 #define FILE_IS_DEFAULT 1
 #define CLEAR_FILE 2
 #define STDIN 4
+
 char* writeFile;
 int settings;
 
@@ -34,6 +35,7 @@ int parseArgs(int argc, char** args)
 					case 'c':
 						settings |= CLEAR_FILE;
 						break;
+
 					case 'i':
 						settings |= STDIN;
 				}
@@ -44,7 +46,6 @@ int parseArgs(int argc, char** args)
 			options = 0;
 			return p;
 		}
-
 	}
 	return p;
 }
@@ -111,6 +112,6 @@ int main (int argc, char** args)
 		fputs("failure while closing file", stderr);
 		exit (2);
 	}
-
 	return 0;
 }
+
