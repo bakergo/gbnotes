@@ -1,5 +1,7 @@
+#!/usr/bin/python
 import datetime, time
 import sqlite3
+import sys
 
 def openFile():
 	return open('/home/gregorah/notes', 'a')
@@ -9,6 +11,7 @@ def writeNoteToFile(note):
 	notesFile.write(datetime.date.today().ctime())
 	notesFile.write('\n')
 	notesFile.write(note)
+	notesFile.write('\n\n')
 	notesFile.close()
 
 def ensureDB(conn):
@@ -33,8 +36,28 @@ def writeNote(note, writeFile, writeDatabase):
 	if(writeDatabase):
 		writeNoteToDatabase(note)
 
+def isWriteDb():
+	for arg in sys.argv:
+		if(arg == '--nodb'):
+			return False
+	return True
+
+def isWriteFile():
+	for arg in sys.argv:
+		if(arg == '--nofile'):
+			return False
+	return True
+
+def showHelp():
+	for arg in sys.argv:
+		if(arg == '-h'):
+			print "Usage: notes [--nodb] [--nofile]"
+			print "--nodb: does not use ~/.notes.db when writing a note."
+			print "--nofile: does not use ~/notes when writing a note."
+			exit()
+showHelp()
 print "Taking notes..."
 note = raw_input()
-writeNote(note, True, True)
 
+writeNote(note, isWriteFile(), isWriteDb())
 
