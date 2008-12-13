@@ -8,7 +8,7 @@ def openFile():
 
 def writeNoteToFile(note):
 	notesFile = openFile()
-	notesFile.write(datetime.datetime.now().strftime("%a %b %d %H:%M:%S %Y"))
+	notesFile.write(datetime.date.today().ctime())
 	notesFile.write('\n')
 	notesFile.write(note)
 	notesFile.write('\n\n')
