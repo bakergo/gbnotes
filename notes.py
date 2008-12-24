@@ -20,7 +20,7 @@ def ensureDB(conn):
 
 def openDB():
 	return ensureDB(sqlite3.connect('/home/gregorah/.notes.db'))
-	
+
 def insertNote(notesDB, note):
 	notesDB.execute('INSERT INTO Notes(time, note) VALUES (current_timestamp,?);', (note,))
 
