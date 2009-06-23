@@ -1,40 +1,30 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 import datetime, time
 import sqlite3
 import sys
 
-def openFile():
-	return open('/home/gregorah/notes', 'a')
+class noteFile:
+	def open_note(self):
+		self.f = open('/home/gregorah/notes', 'a')
+		
+	def close_note(self):
+		self.f.close()
+		
+	def write_note(self, note):
+		self.f.write('%s: %s' % (datetime.datetime.now().ctime(), note))
 
-def writeNoteToFile(note):
-	notesFile = openFile()
-	notesFile.write(datetime.date.today().ctime())
-	notesFile.write('\n')
-	notesFile.write(note)
-	notesFile.write('\n\n')
-	notesFile.close()
+class noteDb:
+	def open_note(self):
+		self.db = sqlite3.connect('/home/gregorah/.notes.db')
+		self.db.execute('CREATE TABLE IF NOT EXISTS Notes(time DATETIME, note TEXT);')
 
-def ensureDB(conn):
-	conn.execute('CREATE TABLE IF NOT EXISTS Notes(time DATETIME, note TEXT);')
-	return conn
+	def close_note(self):
+		self.db.commit()
+		self.db.close()
 
-def openDB():
-	return ensureDB(sqlite3.connect('/home/gregorah/.notes.db'))
-
-def insertNote(notesDB, note):
-	notesDB.execute('INSERT INTO Notes(time, note) VALUES (current_timestamp,?);', (note,))
-
-def writeNoteToDatabase(note):
-	notesDB = openDB()
-	insertNote(notesDB, note)
-	notesDB.commit()
-	notesDB.close()
-
-def writeNote(note, writeFile, writeDatabase):
-	if(writeFile):
-		writeNoteToFile(note)
-	if(writeDatabase):
-		writeNoteToDatabase(note)
+	def write_note(self, note):
+		self.db.execute('INSERT INTO Notes(time, note) VALUES (current_timestamp, ?);', (note,))
 
 def isWriteDb():
 	for arg in sys.argv:
@@ -51,13 +41,33 @@ def isWriteFile():
 def showHelp():
 	for arg in sys.argv:
 		if(arg == '-h'):
-			print "Usage: notes [--nodb] [--nofile]"
+			print "Usage: notes [-h] [--nodb] [--nofile]"
+			print "-h: display this help and exit."
 			print "--nodb: does not use ~/.notes.db when writing a note."
 			print "--nofile: does not use ~/notes when writing a note."
 			exit()
+
+def makeNoteFiles():
+	notefiles = list()
+	if(isWriteFile()):
+		notefiles.append(noteFile())
+	if(isWriteDb()):
+		notefiles.append(noteDb())
+	for notefile in notefiles:
+		notefile.open_note()
+	return notefiles
+
 showHelp()
 print "Taking notes..."
-note = raw_input()
 
-writeNote(note, isWriteFile(), isWriteDb())
+notefiles = makeNoteFiles()
+note = sys.stdin.readline()
 
+while (len(note) != 0):
+	for notefile in notefiles:
+		notefile.write_note(note)
+	note = sys.stdin.readline()
+
+for notefile in notefiles:
+	notefile.close_note()
+	
