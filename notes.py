@@ -4,27 +4,34 @@ import datetime, time
 import sqlite3
 import sys
 
-class noteFile:
-	def open_note(self):
-		self.f = open('/home/gregorah/notes', 'a')
-		
+class NoteFile:
+	def __init__(self):
+		self.open_files = list()
+	def open_note(self, path):
+		self.open_files.append(open(path, 'a'))
 	def close_note(self):
-		self.f.close()
-		
+		for open_file in self.open_files:
+			open_file.close()
+			self.open_files.remove(open_file)
 	def write_note(self, note):
-		self.f.write('%s: %s' % (datetime.datetime.now().ctime(), note))
+		for open_file in self.open_files:
+				open_file.write('%s: %s' % (datetime.datetime.now().ctime(), note))
 
-class noteDb:
-	def open_note(self):
-		self.db = sqlite3.connect('/home/gregorah/.notes.db')
-		self.db.execute('CREATE TABLE IF NOT EXISTS Notes(time DATETIME, note TEXT);')
-
+class NoteSqlite:
+	def __init__(self):
+		self.databases = list()
+	def open_note(self, path):
+		db = sqlite3.connect(path)
+		db.execute('CREATE TABLE IF NOT EXISTS Notes(time DATETIME, note TEXT);')
+		self.databases.append(db)
 	def close_note(self):
-		self.db.commit()
-		self.db.close()
-
+		for db in self.databases:
+			db.commit()
+			db.close()
+			self.databases.remove(db)
 	def write_note(self, note):
-		self.db.execute('INSERT INTO Notes(time, note) VALUES (current_timestamp, ?);', (note,))
+		for db in self.databases:
+			db.execute('INSERT INTO Notes(time, note) VALUES (current_timestamp, ?);', (note,))
 
 def isWriteDb():
 	for arg in sys.argv:
@@ -50,15 +57,17 @@ def showHelp():
 def makeNoteFiles():
 	notefiles = list()
 	if(isWriteFile()):
-		notefiles.append(noteFile())
+		n = NoteFile()
+		n.open_note("/home/gregorah/notes")
+		notefiles.append(n)
 	if(isWriteDb()):
-		notefiles.append(noteDb())
-	for notefile in notefiles:
-		notefile.open_note()
+		n = NoteSqlite()
+		n.open_note("/home/gregorah/.notes.db")
+		notefiles.append(n)
 	return notefiles
 
 showHelp()
-print "Taking notes..."
+print "Taking notes. ^D to quit."
 
 notefiles = makeNoteFiles()
 note = sys.stdin.readline()
@@ -70,4 +79,3 @@ while (len(note) != 0):
 
 for notefile in notefiles:
 	notefile.close_note()
-	
