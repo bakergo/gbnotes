@@ -54,7 +54,7 @@ def showHelp():
 			print "--nofile: does not use ~/notes when writing a note."
 			exit()
 def parseSubj():
-	if(len(sys.argv) > 0):
+	if(len(sys.argv) > 1):
 		if(sys.argv[len(sys.argv)-1] != '--nodb' and sys.argv[len(sys.argv)-1] != '--nofile'):
 			return sys.argv[len(sys.argv)-1]
 		else:
