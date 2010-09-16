@@ -3,6 +3,8 @@
 import datetime, time
 import sqlite3
 import sys
+import optparse
+import os
 
 class NoteFile:
 	def __init__(self):
@@ -33,18 +35,6 @@ class NoteSqlite:
 		for db in self.databases:
 			db.execute('INSERT INTO Notes(time,subj, note) VALUES (current_timestamp, ?,?);', (subject,note))
 
-def isWriteDb():
-	for arg in sys.argv:
-		if(arg == '--nodb'):
-			return False
-	return True
-
-def isWriteFile():
-	for arg in sys.argv:
-		if(arg == '--nofile'):
-			return False
-	return True
-
 def showHelp():
 	for arg in sys.argv:
 		if(arg == '-h'):
@@ -62,22 +52,26 @@ def parseSubj():
 	else:
 		return ''
 
-def makeNoteFiles():
-	notefiles = list()
-	if(isWriteFile()):
-		n = NoteFile()
-		n.open_note("/home/gregorah/notes")
-		notefiles.append(n)
-	if(isWriteDb()):
-		n = NoteSqlite()
-		n.open_note("/home/gregorah/.notes.db")
-		notefiles.append(n)
-	return notefiles
+parser = optparse.OptionParser(usage='Take notes and store them in a database')
+parser.add_option('--nodb',default=False,action='store_true', help='Does not use the database when writing a note.')
+parser.add_option('--nofile',default=False, action='store_true', help='Does not use the notes file when writing a note.')
+parser.add_option('--db', default='~/.notes.db', type="string", help='Specify the database file used')
+parser.add_option('--file', default='~/notes.txt', type="string", help='Specify the note text file used')
 
-showHelp()
+(options, arguments) = parser.parse_args()
+
+notefiles = list()
+if(not options.nofile):
+	n = NoteFile()
+	n.open_note(os.path.expanduser(options.file))
+	notefiles.append(n)
+if(not options.nodb):
+	n = NoteSqlite()
+	n.open_note(os.path.expanduser(options.db))
+	notefiles.append(n)
+
 print "Taking notes. ^D to quit."
 
-notefiles = makeNoteFiles()
 note = sys.stdin.readline()
 subj = parseSubj()
 
@@ -88,3 +82,4 @@ while (len(note) != 0):
 
 for notefile in notefiles:
 	notefile.close_note()
+	
