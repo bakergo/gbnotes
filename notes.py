@@ -73,7 +73,7 @@ def main():
 		notefiles.append(dbnote)
 
 	subj = ' '.join(arguments)
-	if(len(subj > 0)):
+	if(len(subj) > 0):
 		print "Taking notes on subject %s. ^D to quit." % subj
 	else:
 		print "Taking notes. ^D to quit."
