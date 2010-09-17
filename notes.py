@@ -35,20 +35,9 @@ class NoteSqlite:
 		for db in self.databases:
 			db.execute('INSERT INTO Notes(time,subj, note) VALUES (current_timestamp, ?,?);', (subject,note))
 
-def showHelp():
-	for arg in sys.argv:
-		if(arg == '-h'):
-			print "Usage: note [-h] [--nodb] [--nofile] [SUBJ]"
-			print "-h: display this help and exit."
-			print "--nodb: does not use ~/.notes.db when writing a note."
-			print "--nofile: does not use ~/notes when writing a note."
-			exit()
-def parseSubj():
-	if(len(sys.argv) > 1):
-		if(sys.argv[len(sys.argv)-1] != '--nodb' and sys.argv[len(sys.argv)-1] != '--nofile'):
-			return sys.argv[len(sys.argv)-1]
-		else:
-			return ''
+def parseSubj(args):
+	if(len(args) > 0):
+		return args[0]
 	else:
 		return ''
 
@@ -73,7 +62,7 @@ if(not options.nodb):
 print "Taking notes. ^D to quit."
 
 note = sys.stdin.readline()
-subj = parseSubj()
+subj = parseSubj(arguments)
 
 while (len(note) != 0):
 	for notefile in notefiles:
@@ -82,4 +71,3 @@ while (len(note) != 0):
 
 for notefile in notefiles:
 	notefile.close_note()
-	
