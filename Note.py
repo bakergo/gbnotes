@@ -29,7 +29,8 @@ class NoteSqlite:
         self.open_file = None
         sqldb = sqlite3.connect(path)
         sqldb.execute('CREATE TABLE IF NOT EXISTS Subject(subjId INTEGER PRIMARY KEY AUTOINCREMENT, subject TEXT);')
-        sqldb.execute('CREATE TABLE IF NOT EXISTS Notes(time DATETIME, subjId INTEGER, note TEXT, FOREIGN KEY (subjId) REFERENCES Subject(subjID));')
+        sqldb.execute('CREATE TABLE IF NOT EXISTS Notes(noteId INTEGER PRIMARY KEY AUTOINCREMENT, time DATETIME, note TEXT);')
+        sqldb.execute('CREATE TABLE IF NOT EXISTS NoteSubject(subjId INTEGER, noteId INTEGER, FOREIGN KEY (subjId) REFERENCES Subject(subjID), FOREIGN KEY (noteId) REFERENCES Notes(noteId));')
         self.open_file = sqldb
         
     def close(self):
@@ -44,6 +45,11 @@ class NoteSqlite:
         add it to the database if necessary."""
         if self.open_file is not None:
             sqldb = self.open_file.cursor()
+            #write the note
+            sqldb.execute('INSERT INTO Notes(time, note) VALUES (current_timestamp,?)', [note])
+            noteid = sqldb.lastrowid
+            
+            #write the subject and link it to the note if needed
             subjid = None
             if subject != '':
                 sqldb.execute('SELECT subjId FROM Subject WHERE Subject.subject = ?', [subject])
@@ -53,4 +59,4 @@ class NoteSqlite:
                     subjid = sqldb.lastrowid
                 else:
                     subjid = subjrow[0]
-            sqldb.execute('INSERT INTO Notes(time, subjId, note) VALUES (current_timestamp, ?,?)', (subjid, note))
+				sqldb.execute('INSERT INTO NoteSubject(subjId, noteId) VALUES (?,?)', [subjid, noteid])
