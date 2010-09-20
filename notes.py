@@ -4,7 +4,7 @@
 import sys
 import optparse
 import os
-import NoteSqlite, NoteFile
+from Note import NoteFile, NoteSqlite
 
 def main():
     """Run the arguments, then write the notes until the stream is
@@ -26,13 +26,10 @@ def main():
 
     notefiles = list()
     if(not options.nofile):
-        fnote = NoteFile.NoteFile()
-        fnote.open_note(os.path.expanduser(options.file))
-        notefiles.append(fnote)
+        notefiles.append(NoteFile(os.path.expanduser(options.file)))
     if(not options.nodb):
-        dbnote = NoteSqlite.NoteSqlite()
-        dbnote.open_note(os.path.expanduser(options.database))
-        notefiles.append(dbnote)
+        notefiles.append(NoteSqlite(os.path.expanduser(options.database)))
+
     if(len(options.subject) > 0):
         print "Taking notes on subject %s. ^D to quit." % options.subject
     else:
@@ -45,7 +42,7 @@ def main():
         note = sys.stdin.readline()
         
     for notefile in notefiles:
-        notefile.close_note()
+        notefile.close()
 
 if(__name__ == "__main__"):
     sys.exit(main())
