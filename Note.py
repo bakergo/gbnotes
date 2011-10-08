@@ -59,4 +59,4 @@ class NoteSqlite:
                     subjid = sqldb.lastrowid
                 else:
                     subjid = subjrow[0]
-				sqldb.execute('INSERT INTO NoteSubject(subjId, noteId) VALUES (?,?)', [subjid, noteid])
+                sqldb.execute('INSERT INTO NoteSubject(subjId, noteId) VALUES (?,?)', [subjid, noteid])
