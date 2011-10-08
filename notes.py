@@ -4,6 +4,8 @@
 import sys
 import optparse
 import os
+import subprocess
+import tempfile
 from Note import NoteFile, NoteSqlite
 
 def main():
@@ -30,17 +32,20 @@ def main():
     if(not options.nodb):
         notefiles.append(NoteSqlite(os.path.expanduser(options.database)))
 
-    if(len(options.subject) > 0):
-        print "Taking notes on subject %s. ^D to quit." % options.subject
-    else:
-        print "Taking notes. ^D to quit."
-    
-    note = sys.stdin.readline() 
-    while (len(note) != 0):
-        for notefile in notefiles:
-            notefile.write_note(options.subject, note)
-        note = sys.stdin.readline()
-        
+    tmpfile = tempfile.NamedTemporaryFile(suffix='.txt', prefix='note-',
+            delete=False)
+    print >> tmpfile
+    print >> tmpfile , '# Write your notes, one per line, and be satisfied'
+    print >> tmpfile , '# Lines beginning with # will be ignored'
+    tmpfile.close()
+    subprocess.call(['editor', tmpfile.name])
+    with open(tmpfile.name) as writtenfile:
+        for note in writtenfile:
+            note = note.strip()
+            if len(note > 0 and note[0] != '#'):
+                for notefile in notefiles:
+                    notefile.write_note(options.subject, note.strip())
+    os.remove(tmpfile.name)
     for notefile in notefiles:
         notefile.close()
 
